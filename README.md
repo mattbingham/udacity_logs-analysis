@@ -10,7 +10,11 @@ adhering to SQL and Python (PEP-8) best practices.
 3. Display which days requests which lead to errors is more than 1%
 
 ## Instructions
-In order to test this y
+
+This assumes that you already have the sql database file up and runnin.
+
+- Ensure you have the psycopg2 module installed
+- Run `python logsanalysis.py` in bash
 
 ## Database information
 
