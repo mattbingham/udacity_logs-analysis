@@ -5,74 +5,86 @@ __email__ = "mattbingham@outlook.com"
 
 import psycopg2
 
+# Script is used to query and return from the "news" database.
+# The following answers are required:
+# q1. What are the most popular 3 articles of all time?
+# q2. Who are the most popular article authors of all time?
+# q3. On which days did more than 1% of the requests lead to errors?
 
+# Runs on python3 (I'm using 3.5.2)
+
+import psycopg2
 DBNAME = "news"
 
 
-# Return which days had more than 1% request errors
-def request_errors():
-  db = psycopg2.connect(database=DBNAME)
-  c = db.cursor()
-  c.execute("""
-  SELECT count(status), count(time) as percentage
-  FROM log
-  WHERE (log.status LIKE '%404%'
-  )
-  GROUP BY log.status;
-  """)
-  print("\nError logs:\n")
-  print(c.fetchall())
-  # Split code and number
-  #print("{} -  total").format(log)
+db = psycopg2.connect(database=DBNAME)
+c = db.cursor()
 
-  db.close()
+# q1 - Find top 3 articles
 
-# Return 3 articles sorted by most popular
-def popular_articles():
-  db = psycopg2.connect(database=DBNAME)
-  c = db.cursor()
-  c.execute("""
-  SELECT title, count(path) AS num
-  FROM articles, log
-  WHERE log.path LIKE '/%' || articles.slug
-  GROUP BY articles.title
-  ORDER BY num DESC
-  LIMIT 3;
-  """)
-  print("\nArticles by Hits:\n")
-  articles = (c.fetchall())
-  i = 1
-  for article in articles:
-      print("{}. {} - {} hits total").format(i, article[0], article[1])
-      i+=1
+c.execute(
+    "SELECT path, count(path) \
+    FROM log \
+    GROUP BY path \
+    HAVING path like '/article%' \
+    ORDER BY count desc \
+    LIMIT 3")
 
-  db.close()
+q1 = c.fetchall()
 
-# Return all authors, sorted by most popular
-def popular_authors():
-  db = psycopg2.connect(database=DBNAME)
-  c = db.cursor()
-  c.execute("""
-  SELECT name, count(path) AS num
-  FROM authors, log, articles
-  WHERE log.path LIKE '/%' || articles.slug
-  AND articles.author = authors.id
-  GROUP BY authors.name
-  ORDER BY num DESC;
-  """)
-  print("\nAuthor Leaderboard:\n")
-  authors = c.fetchall()
+print("\nThe most popular 3 articles of all time are:")
+for i in q1:
+    article = i[0]
+    num = i[1]
+    article = article.split("/")[2].split("-")
+    articleTitle = " ".join(article)
+    print("%s - %s" % (articleTitle, str(num)))
 
-  # Split code and number
-  i = 1
-  for author in authors:
-      print("{}. {} - {} hits total").format(i, author[0], author[1])
-      i+=1
+# q2 - Find most popular authors
 
-  db.close()
+c.execute(
+    "SELECT authors.name, sum(authorcount.count) \
+    FROM authors join \
+    (SELECT hitcount.count, articles.author \
+        FROM \
+            (SELECT path, count(path) \
+            FROM log \
+            GROUP BY path \
+            HAVING path like '/article%' \
+            ORDER BY count desc limit 8) \
+            AS hitcount join articles \
+            ON ('/article/' || articles.slug) like hitcount.path) \
+    AS authorcount on authorcount.author = authors.id \
+    GROUP BY authors.name \
+    ORDER BY sum DESC")
 
+q2 = c.fetchall()
 
-if __name__ == "__main__":
-  request_errors()
-  popular_authors()
-  popular_articles()
+print("\nThe most popular authors of all time are:")
+
+for i in q2:
+    author = i[0]
+    hits = i[1]
+    print("%s - %s" % (author, str(hits)))
+
+# q3 - Get dates with errors above 1%
+
+c.execute(
+    "SELECT fails.fordate, \
+    (cast(fails.failed AS float)/cast(fails.totalhits AS float)*100) AS error \
+    FROM (\
+        SELECT date(time) AS fordate, count(status) AS totalhits, \
+        count(case when status != '200 OK' then 1 else null end) AS failed \
+        FROM log GROUP BY fordate ORDER BY fordate) AS fails \
+    WHERE cast(fails.failed AS float) / cast(fails.totalhits AS float) > 0.01")
+
+errors = c.fetchall()
+
+print("\nDays on which more than 1% of the requests lead to errors:")
+for i in errors:
+    date = i[0]
+    errors = i[1]
+    print("%s - %s%% errors" % (date, str(round(errors, 1))))
+
+db.close()
+
