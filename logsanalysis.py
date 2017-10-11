@@ -1,9 +1,9 @@
 #!/usr/bin/env python
+import psycopg2
+
 """Udacity Logs Analysis project - database connections and queries"""
 __author__ = "Matt Bingham"
 __email__ = "mattbingham@outlook.com"
-
-import psycopg2
 
 # Script is used to query and return from the "news" database.
 # The following answers are required:
@@ -13,7 +13,7 @@ import psycopg2
 
 # Runs on python3 (I'm using 3.5.2)
 
-import psycopg2
+
 DBNAME = "news"
 
 
@@ -37,24 +37,24 @@ for i in q1:
     article = i[0]
     num = i[1]
     article = article.split("/")[2].split("-")
-    articleTitle = " ".join(article)
-    print("%s - %s" % (articleTitle, str(num)))
+    article_title = " ".join(article)
+    print("%s - %s" % (article_title, str(num)))
 
 # q2 - Find most popular authors
 
 c.execute(
-    "SELECT authors.name, sum(authorcount.count) \
+    "SELECT authors.name, sum(author_count.count) \
     FROM authors join \
-    (SELECT hitcount.count, articles.author \
+    (SELECT hit_count.count, articles.author \
         FROM \
             (SELECT path, count(path) \
             FROM log \
             GROUP BY path \
             HAVING path like '/article%' \
-            ORDER BY count desc limit 8) \
-            AS hitcount join articles \
-            ON ('/article/' || articles.slug) like hitcount.path) \
-    AS authorcount on authorcount.author = authors.id \
+            ORDER BY count desc) \
+            AS hit_count join articles \
+            ON ('/article/' || articles.slug) like hit_count.path) \
+    AS author_count on author_count.author = authors.id \
     GROUP BY authors.name \
     ORDER BY sum DESC")
 
@@ -70,13 +70,13 @@ for i in q2:
 # q3 - Get dates with errors above 1%
 
 c.execute(
-    "SELECT fails.fordate, \
-    (cast(fails.failed AS float)/cast(fails.totalhits AS float)*100) AS error \
+    "SELECT fails.for_date, \
+    (cast(fails.failed AS float)/cast(fails.all_hits AS float)*100) AS error \
     FROM (\
-        SELECT date(time) AS fordate, count(status) AS totalhits, \
+        SELECT date(time) AS for_date, count(status) AS all_hits, \
         count(case when status != '200 OK' then 1 else null end) AS failed \
-        FROM log GROUP BY fordate ORDER BY fordate) AS fails \
-    WHERE cast(fails.failed AS float) / cast(fails.totalhits AS float) > 0.01")
+        FROM log GROUP BY for_date ORDER BY for_date) AS fails \
+    WHERE cast(fails.failed AS float) / cast(fails.all_hits AS float) > 0.01")
 
 errors = c.fetchall()
 
@@ -87,4 +87,3 @@ for i in errors:
     print("%s - %s%% errors" % (date, str(round(errors, 1))))
 
 db.close()
-
