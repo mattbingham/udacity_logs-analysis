@@ -42,7 +42,24 @@ The goal is to create a python file that fetches a defined set of results (goals
 
 ## Instructions
 
-This project requires a database and vagrant box supplied by Udacity when participating in this project, so I'm going to go ahead and assume you have this set-up, along with dependenices such as the psycopg2 module.
+This project requires a database and vagrant box supplied by Udacity when participating in this project.
+
+### Required files
+
+1. The vagrant box template is available [here](https://d17h27t6h515a5.cloudfront.net/topher/2017/August/59822701_fsnd-virtual-machine/fsnd-virtual-machine.zip).
+2. The newsdata.zip file is available [here](https://d17h27t6h515a5.cloudfront.net/topher/2016/August/57b5f748_newsdata/newsdata.zip).
+3. You'll also need to install the [psycopg2](http://initd.org/psycopg/docs/) module.
+
+#### Set-up
+
+1. Extract the vagrant box folder
+2. Extract newsdata.sql inside the vagrant folder
+3. cd into the vagrant folder
+4. Start the Vagrant box: Run `vagrant up` (this will begin the box download, which may take a while depending on the speed of your internet connection)
+5. Install psycopg2 for Python3
+6. Install the database: (Still inside the vagrant folder) run `psql -d news -f newsdata.sql` 
+
+### Run the program
 
 - Run `python logsanalysis.py` in bash (or `python3 logsanalysis.py` if you have both Python2 and 3 installed).
 
@@ -52,17 +69,17 @@ This project requires a database and vagrant box supplied by Udacity when partic
 
 1. The most popular 3 articles of all time are:
 ```
-candidate is jerk - 338647
-bears love berries - 253801
-bad things gone - 170098
+Candidate is jerk, alleges rival - 338647 views
+Bears love berries, alleges bear - 253801 views
+Bad things gone, say good people - 170098 views
 ```
 
 2. The most popular authors of all time are:
 ```
-Ursula La Multa - 507594
-Rudolf von Treppenwitz - 423457
-Anonymous Contributor - 170098
-Markoff Chaney - 84557
+Ursula La Multa - 507594 views
+Rudolf von Treppenwitz - 423457 views
+Anonymous Contributor - 170098 views
+Markoff Chaney - 84557 views
 ```
 
 3. Days on which more than 1% of the requests lead to errors:

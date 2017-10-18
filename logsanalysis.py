@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import psycopg2
 
 """Udacity Logs Analysis project - database connections and queries"""
@@ -23,22 +23,20 @@ c = db.cursor()
 # q1 - Find top 3 articles
 
 c.execute(
-    "SELECT path, count(path) \
+    "SELECT title, count(*) as views \
     FROM log \
-    GROUP BY path \
-    HAVING path like '/article%' \
-    ORDER BY count desc \
+        JOIN articles on log.path = '/article/' || articles.slug \
+    GROUP BY title \
+    ORDER BY views desc \
     LIMIT 3")
 
 q1 = c.fetchall()
 
 print("\nThe most popular 3 articles of all time are:")
 for i in q1:
-    article = i[0]
-    num = i[1]
-    article = article.split("/")[2].split("-")
-    article_title = " ".join(article)
-    print("%s - %s" % (article_title, str(num)))
+    title = i[0]
+    views = i[1]
+    print("%s - %s views" % (title, str(views)))
 
 # q2 - Find most popular authors
 
@@ -53,7 +51,7 @@ c.execute(
             HAVING path like '/article%' \
             ORDER BY count desc) \
             AS hit_count join articles \
-            ON ('/article/' || articles.slug) like hit_count.path) \
+            ON ('/article/' || articles.slug) = hit_count.path) \
     AS author_count on author_count.author = authors.id \
     GROUP BY authors.name \
     ORDER BY sum DESC")
@@ -62,10 +60,8 @@ q2 = c.fetchall()
 
 print("\nThe most popular authors of all time are:")
 
-for i in q2:
-    author = i[0]
-    hits = i[1]
-    print("%s - %s" % (author, str(hits)))
+for author, hits in q2:
+	print("%s - %s views" % (author, str(hits)))
 
 # q3 - Get dates with errors above 1%
 

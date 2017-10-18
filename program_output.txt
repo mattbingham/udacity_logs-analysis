@@ -1,13 +1,13 @@
 The most popular 3 articles of all time are:
-candidate is jerk - 338647
-bears love berries - 253801
-bad things gone - 170098
+Candidate is jerk, alleges rival - 338647 views
+Bears love berries, alleges bear - 253801 views
+Bad things gone, say good people - 170098 views
 
 The most popular authors of all time are:
-Ursula La Multa - 507594
-Rudolf von Treppenwitz - 423457
-Anonymous Contributor - 170098
-Markoff Chaney - 84557
+Ursula La Multa - 507594 views
+Rudolf von Treppenwitz - 423457 views
+Anonymous Contributor - 170098 views
+Markoff Chaney - 84557 views
 
 Days on which more than 1% of the requests lead to errors:
 2016-07-17 - 2.3% errors
